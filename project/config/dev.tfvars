@@ -7,7 +7,7 @@ image_tag = "0.0.1"
 repo_url = "https://github.com/YaroslavaDe/ECS-VPC-CodeBuild-by-Terraform/"
 branch_pattern = "^refs/heads/dev$"
 git_trigger_event = "PUSH"
-app_count = 2
+app_count = 1
 
 vpc_cidr = "10.0.0.0/16"
 private_subnet_CIDR = ["10.0.3.0/24", "10.0.4.0/24"]
