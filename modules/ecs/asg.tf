@@ -53,10 +53,9 @@ resource "aws_appautoscaling_policy" "down" {
 }
 
 # configures alarms to trigger scaling up or down. 
-# It will also have two components: one for scaling up and another for scaling down. 
-# Each alarm action will be associated with the aws_autoscaling_policy resource
-# CloudWatch alarm that triggers the autoscaling up policy
-# Amazon ECS publishes CloudWatch metrics with your service’s average CPU and memory usage
+# CloudWatch metric based on the CPU. If the CPU usage is greater than 85% from 2 periods, 
+# trigger the alarm_action that calls the scale-up policy. 
+# If it returns to the Ok state, it will trigger the scale-down policy
 resource "aws_cloudwatch_metric_alarm" "service_cpu_high" {
   alarm_name          = "${var.app_name}-${var.environment}_cpu_utilization_high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -93,4 +92,3 @@ resource "aws_cloudwatch_metric_alarm" "service_cpu_low" {
 
   alarm_actions = [aws_appautoscaling_policy.down.arn]
 }
-

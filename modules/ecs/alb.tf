@@ -1,30 +1,18 @@
-# alb.tf
-
+# alb - will be on the public subnet and will forward the requests to the ECS service
 resource "aws_alb" "main" {
-  #name            = "${var.app_name}-${var.environment}-lb"
-  name = format("%s-%s-ALB", var.app_name, var.environment)
-  #subnets         = aws_subnet.public.*.id
+  name            = format("%s-%s-ALB", var.app_name, var.environment)
   subnets         = values(aws_subnet.public)[*].id
   security_groups = [aws_security_group.lb.id]
 }
 
 resource "aws_alb_target_group" "app" {
-  #name        = "${var.app_name}-${var.environment}-tg"
   name        = format("%s-%s-TG-ALB", var.app_name, var.environment)
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
-  # health_check {
-  #   healthy_threshold   = "3"
-  #   interval            = "30"
-  #   protocol            = "HTTP"
-  #   matcher             = "200"
-  #   timeout             = "3"
-  #   path                = var.health_check_path
-  #   unhealthy_threshold = "2"
-  # }
+  # If ALB check failed, ALB will make target group unhealthy and as a result, your container will be killed
   dynamic "health_check" {
     for_each = var.test_block
 
@@ -51,4 +39,3 @@ resource "aws_alb_listener" "front_end" {
     type             = "forward"
   }
 }
-

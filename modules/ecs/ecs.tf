@@ -1,11 +1,8 @@
-# ecs.tf
+# ecs-cluster
 
 resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-${var.environment}-cluster"
 }
-
-# Add FARGATE CAPACITY PROVIDERS to ECS cluster
-# the Capacity Providers FARGATE and FARGATE_SPOT are already predefined by default
 
 data "template_file" "cdef_app" {
   template = file(var.taskdef_template) #container_definitions - jsonencode
@@ -41,8 +38,7 @@ resource "aws_ecs_service" "main" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups = [aws_security_group.ecs_tasks.id]
-    #subnets          = aws_subnet.private.*.id
+    security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = values(aws_subnet.private)[*].id
     assign_public_ip = true
   }
@@ -55,4 +51,3 @@ resource "aws_ecs_service" "main" {
 
   depends_on = [aws_alb_listener.front_end, aws_iam_role_policy.ecs_task_execution_role]
 }
-

@@ -6,19 +6,6 @@ resource "aws_security_group" "codebuild_sg" {
   description = "Allow Codebuild connectivity to all the resources within our VPC"
   vpc_id      = var.vpc_id
 
-  # ingress {
-  #   from_port   = 0
-  #   to_port     = 0
-  #   protocol    = "-1"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
-  # egress {
-  #   from_port   = 0
-  #   to_port     = 0
-  #   protocol    = "-1"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
   dynamic "ingress" {
     for_each = var.codebuild_inbound
 
@@ -42,24 +29,6 @@ resource "aws_security_group" "codebuild_sg" {
   }
 }
 
-# resource "null_resource" "import_source_credentials" {
-
-
-#   triggers = {
-#     github_oauth_token = var.github_oauth_token
-#   }
-
-#   # Imports the source repository credentials for an CodeBuild project that has its source code stored in a GitHub
-#   provisioner "local-exec" {
-#     command = <<EOF
-#       aws --region ${data.aws_region.current.name} codebuild import-source-credentials \
-#                                                              --token ${var.github_oauth_token} \
-#                                                              --server-type GITHUB \
-#                                                              --auth-type PERSONAL_ACCESS_TOKEN
-# EOF
-#   }
-# }
-
 # resource "aws_secretsmanager_secret" "gh_token" {
 #   name        = "NEW_ACCESS_TOKEN"
 #   description = "Gitgub credentials"
@@ -72,7 +41,6 @@ resource "aws_security_group" "codebuild_sg" {
 
 # CodeBuild Project
 resource "aws_codebuild_project" "project" {
- # depends_on    = [null_resource.import_source_credentials]
   name          = local.codebuild_project_name
   description   = local.description
   build_timeout = "120"
@@ -83,7 +51,8 @@ resource "aws_codebuild_project" "project" {
   }
 
   environment {
-    # Build environment compute type                                                              https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html
+    # Build environment compute type                                                              
+    # https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html
     compute_type = var.compute_type_codebuild # 4 GB memory, 2 vCPUs, 50 GB disk space
 
     # https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
@@ -93,23 +62,17 @@ resource "aws_codebuild_project" "project" {
     privileged_mode = true
 
     # environment_variable {
-    #   name  = "CI"
-    #   value = "true"
-    # }
-
-    # environment_variable {
     #   name  = "SECRETS_ID"
     #   value = aws_secretsmanager_secret.gh_token.arn
     # }
   }
-    # dynamic "environment_variable" {
-    #   for_each = var.codebuild_env_vars["LOAD_VARS"] != false ? var.codebuild_env_vars : {}
-    #   content {
-    #     name  = environment_variable.key
-    #     value = environment_variable.value
-    #   }
-    # }
-  
+  # dynamic "environment_variable" {
+  #   for_each = var.codebuild_env_vars["LOAD_VARS"] != false ? var.codebuild_env_vars : {}
+  #   content {
+  #     name  = environment_variable.key
+  #     value = environment_variable.value
+  #   }
+  # }
 
   source {
     buildspec           = var.build_spec_file
