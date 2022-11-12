@@ -127,3 +127,6 @@ variable "build_image_codebuild" {
 #     EXPORT_PROJECT_NAME = "NAME_OF_PROJECT"
 #   }
 # }
+locals {
+  emails = ["yara.vikt@gmail.com"]
+}

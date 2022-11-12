@@ -1,4 +1,4 @@
-# auto_scaling.tf
+# ECS Service Autoscaling
 
 resource "aws_appautoscaling_target" "target" {
   service_namespace  = "ecs"
@@ -7,6 +7,8 @@ resource "aws_appautoscaling_target" "target" {
   min_capacity       = 1
   max_capacity       = 1
 }
+# aws_appautoscaling_policy: This configures the autoscaling policy. 
+# to define two components: one for scaling up and another for scaling down.
 
 # Automatically scale capacity up by one
 resource "aws_appautoscaling_policy" "up" {
@@ -50,7 +52,11 @@ resource "aws_appautoscaling_policy" "down" {
   depends_on = [aws_appautoscaling_target.target]
 }
 
+# configures alarms to trigger scaling up or down. 
+# It will also have two components: one for scaling up and another for scaling down. 
+# Each alarm action will be associated with the aws_autoscaling_policy resource
 # CloudWatch alarm that triggers the autoscaling up policy
+# Amazon ECS publishes CloudWatch metrics with your service’s average CPU and memory usage
 resource "aws_cloudwatch_metric_alarm" "service_cpu_high" {
   alarm_name          = "${var.app_name}-${var.environment}_cpu_utilization_high"
   comparison_operator = "GreaterThanOrEqualToThreshold"

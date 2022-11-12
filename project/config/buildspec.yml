@@ -5,8 +5,11 @@ env:
     CI: "true"
     REPOSITORY_REGION: "eu-west-2"
     ENV: "dev"
-    APP_NAME: "flaskapp"
+    APP_NAME: "smartapp"
     TERRAFORM_VERSION: "0.14.7"
+
+  secrets-manager:
+    GITHUB_OAUTH_TOKEN : PERSONAL_ACCESS_TOKEN
     
 phases:
   pre_build:

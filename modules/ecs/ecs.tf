@@ -4,6 +4,9 @@ resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-${var.environment}-cluster"
 }
 
+# Add FARGATE CAPACITY PROVIDERS to ECS cluster
+# the Capacity Providers FARGATE and FARGATE_SPOT are already predefined by default
+
 data "template_file" "cdef_app" {
   template = file(var.taskdef_template) #container_definitions - jsonencode
 

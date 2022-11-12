@@ -42,7 +42,7 @@ variable "az_count" {
 
 variable "app_port" {
   description = "Port exposed by the docker image to redirect traffic to"
-  default     = 80
+  default     = 5000
 }
 variable "app_inbound_ports" {
   type = map(object({
@@ -52,8 +52,8 @@ variable "app_inbound_ports" {
   }))
   
   default = {
-    "80" = {
-      port        = 80
+    "5000" = {
+      port        = 5000
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }

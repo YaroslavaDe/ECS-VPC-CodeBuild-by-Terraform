@@ -42,27 +42,37 @@ resource "aws_security_group" "codebuild_sg" {
   }
 }
 
-resource "null_resource" "import_source_credentials" {
+# resource "null_resource" "import_source_credentials" {
 
 
-  triggers = {
-    github_oauth_token = var.github_oauth_token
-  }
+#   triggers = {
+#     github_oauth_token = var.github_oauth_token
+#   }
 
-  # Imports the source repository credentials for an CodeBuild project that has its source code stored in a GitHub
-  provisioner "local-exec" {
-    command = <<EOF
-      aws --region ${data.aws_region.current.name} codebuild import-source-credentials \
-                                                             --token ${var.github_oauth_token} \
-                                                             --server-type GITHUB \
-                                                             --auth-type PERSONAL_ACCESS_TOKEN
-EOF
-  }
-}
+#   # Imports the source repository credentials for an CodeBuild project that has its source code stored in a GitHub
+#   provisioner "local-exec" {
+#     command = <<EOF
+#       aws --region ${data.aws_region.current.name} codebuild import-source-credentials \
+#                                                              --token ${var.github_oauth_token} \
+#                                                              --server-type GITHUB \
+#                                                              --auth-type PERSONAL_ACCESS_TOKEN
+# EOF
+#   }
+# }
+
+# resource "aws_secretsmanager_secret" "gh_token" {
+#   name        = "NEW_ACCESS_TOKEN"
+#   description = "Gitgub credentials"
+# }
+
+# resource "aws_secretsmanager_secret_version" "gh_token" {
+#   secret_id     = aws_secretsmanager_secret.gh_token.id
+#   secret_string = var.github_oauth_token
+# }
 
 # CodeBuild Project
 resource "aws_codebuild_project" "project" {
-  depends_on    = [null_resource.import_source_credentials]
+ # depends_on    = [null_resource.import_source_credentials]
   name          = local.codebuild_project_name
   description   = local.description
   build_timeout = "120"
@@ -82,10 +92,16 @@ resource "aws_codebuild_project" "project" {
     # The privileged flag must be set so that your project has the required Docker permissions
     privileged_mode = true
 
-    environment_variable {
-      name  = "CI"
-      value = "true"
-    }
+    # environment_variable {
+    #   name  = "CI"
+    #   value = "true"
+    # }
+
+    # environment_variable {
+    #   name  = "SECRETS_ID"
+    #   value = aws_secretsmanager_secret.gh_token.arn
+    # }
+  }
     # dynamic "environment_variable" {
     #   for_each = var.codebuild_env_vars["LOAD_VARS"] != false ? var.codebuild_env_vars : {}
     #   content {
@@ -93,7 +109,7 @@ resource "aws_codebuild_project" "project" {
     #     value = environment_variable.value
     #   }
     # }
-  }
+  
 
   source {
     buildspec           = var.build_spec_file
@@ -101,6 +117,16 @@ resource "aws_codebuild_project" "project" {
     location            = var.repo_url
     git_clone_depth     = 1
     report_build_status = "true"
+  }
+
+  source_version = var.branch_pattern
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "codebuild-dev-log-group"
+      stream_name = "codebuild-dev-log-stream"
+      status      = "ENABLED"
+    }
   }
 
   # Removed due using cache from ECR
@@ -143,4 +169,52 @@ resource "aws_codebuild_webhook" "develop_webhook" {
       pattern = var.branch_pattern
     }
   }
+}
+
+resource "aws_sns_topic" "codebuild" {
+  name = "codebuild-notifications"
+}
+
+data "aws_iam_policy_document" "notif_access" {
+  statement {
+    actions = ["sns:Publish"]
+
+    principals {
+      type = "Service"
+      identifiers = [
+        "codestar-notifications.amazonaws.com"
+      ]
+    }
+
+    resources = [aws_sns_topic.codebuild.arn]
+  }
+}
+resource "aws_sns_topic_policy" "default" {
+  arn    = aws_sns_topic.codebuild.arn
+  policy = data.aws_iam_policy_document.notif_access.json
+}
+
+resource "aws_codestarnotifications_notification_rule" "codebuild" {
+  detail_type = "BASIC"
+
+  event_type_ids = [
+    "codebuild-project-build-phase-failure",
+    "codebuild-project-build-state-failed",
+    "codebuild-project-build-state-stopped",
+    "codebuild-project-build-state-succeeded"
+  ]
+
+  name     = "sns-notification-rule-codebuild"
+  resource = aws_codebuild_project.project.arn
+
+  target {
+    address = aws_sns_topic.codebuild.arn
+  }
+}
+
+resource "aws_sns_topic_subscription" "email_subscription" {
+  count     = length(local.emails)
+  topic_arn = aws_sns_topic.codebuild.arn
+  protocol  = "email"
+  endpoint  = local.emails[count.index]
 }
