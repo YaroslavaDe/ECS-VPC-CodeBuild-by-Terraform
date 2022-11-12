@@ -1,7 +1,7 @@
 TAG ?= latest
 REGISTRY_ID ?= 218798394182
 REPOSITORY_REGION ?= eu-west-2
-APP_NAME ?= flaskapp
+APP_NAME ?= smartapp
 ENV_NAME ?= dev
 REPO_NAME = $(REGISTRY_ID).dkr.ecr.$(REPOSITORY_REGION).amazonaws.com/${APP_NAME}-${ENV_NAME}
 

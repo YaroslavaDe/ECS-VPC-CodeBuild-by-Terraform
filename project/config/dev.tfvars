@@ -1,5 +1,5 @@
 environment = "dev"
-app_name = "flaskapp"
+app_name = "smartapp"
 aws_profile = "default"
 aws_account = "218798394182"
 aws_region = "eu-west-2"
