@@ -1,3 +1,0 @@
-output "confirmation" {
-    value = "Done"
-}
