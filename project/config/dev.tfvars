@@ -5,7 +5,7 @@ aws_account = "218798394182"
 aws_region = "eu-west-2"
 image_tag = "0.0.1"
 repo_url = "https://github.com/YaroslavaDe/ECS-VPC-CodeBuild-by-Terraform/"
-branch_pattern = "^refs/heads/main$"
+branch_pattern = "^refs/heads/dev$"
 git_trigger_event = "PUSH"
 app_count = 1
 
