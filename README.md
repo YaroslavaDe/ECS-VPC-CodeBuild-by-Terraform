@@ -1,1 +1,1 @@
-# ECS-VPC-CodeBuild-by-Terraform
+![schema_project_3](https://user-images.githubusercontent.com/107043798/201763473-f4e03f1d-ee8d-4233-9190-0c6d5fc16200.jpg)
