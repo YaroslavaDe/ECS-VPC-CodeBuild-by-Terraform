@@ -11,7 +11,7 @@ The repo contains the next components:
     * ECS - Creates a ECS Cluster and related services
     * Codebuild - Creates an AWS Codebuild job which starts automatically when code pushed to "dev" branch
     * ECR - Creates an Elastic Container repository
-    * local-build - Builds and deploys initial image to ECR when new repository is created
+    * init-build - Builds and deploys initial image to ECR when new repository is created
 
 > /project/config//buildspec.yml - Pipeline file for AWS Codebuild
 
@@ -60,4 +60,4 @@ Destroy modules one by one in reverse order of deployment:
 
 `terraform destroy -target=module.ecr --var-file=./config/dev.tfvars`
 
-S3 Bucket can be deleted manually using AWS console or AWS Cli. 
+S3 Bucket can be deleted manually using AWS console or AWS CLI. 
